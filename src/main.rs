@@ -1,82 +1,17 @@
 use std::fs::File;
 use std::io::prelude::*;
 
+mod point;
+mod shape;
+use point::*;
+use shape::*;
+
 const WIDTH: usize = 1024;
 const HEIGHT: usize = 1024;
 const FOV: usize = 90;
 
-type Number = u32;
-type Area = Vec<Vec<Number>>;
-
-struct Rectangle {
-    pub pos: Point3,
-    pub width: f32,
-    pub height: f32,
-}
-struct Circle {
-    pub pos: Point3,
-    pub radius: f32,
-}
-trait Intersectable {
-    fn intersects(&self, origin: &Point3, direction: &Point3) -> Option<Number>;
-}
-
-impl Intersectable for Rectangle {
-    fn intersects(&self, origin: &Point3, direction: &Point3) -> Option<Number> {
-        let distance = self.pos.z - origin.z;
-        let multiple = distance / direction.z;
-
-        let hit_x = direction.x * multiple;
-        let hit_y = direction.y * multiple;
-
-        let hit = self.pos.x < hit_x
-            && self.pos.x + self.width > hit_x
-            && self.pos.y < hit_y
-            && self.pos.y + self.height > hit_y;
-
-        if hit {
-            Some(15)
-        } else {
-            None
-        }
-    }
-}
-
-impl Intersectable for Circle {
-    fn intersects(&self, origin: &Point3, direction: &Point3) -> Option<Number> {
-        let distance = self.pos.z - origin.z;
-        let multiple = distance / direction.z;
-
-        let hit_x = direction.x * multiple;
-        let hit_y = direction.y * multiple;
-
-        let hit = self.pos.distance(&Point3 {
-            x: hit_x,
-            y: hit_y,
-            z: self.pos.z,
-        }) < self.radius;
-
-        if hit {
-            Some(15)
-        } else {
-            None
-        }
-    }
-}
-
-#[derive(Debug)]
-struct Point3 {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
-}
-
-impl Point3 {
-    fn distance(&self, other: &Point3) -> f32 {
-        ((self.x - other.x).powi(2) + (self.y - other.y).powi(2) + (self.z - other.z).powi(2))
-            .sqrt()
-    }
-}
+pub type Number = u32;
+pub type Area = Vec<Vec<Number>>;
 
 fn calculate_fov() -> f32 {
     std::cmp::max(WIDTH, HEIGHT) as f32 / 2.0 / ((FOV as f32) / 2.0).tan()
