@@ -8,12 +8,38 @@ const FOV: usize = 90;
 type Number = u32;
 type Area = Vec<Vec<Number>>;
 
+struct Rectangle {
+    pub pos: Point3,
+    pub width: f32,
+    pub height: f32,
+}
 struct Circle {
     pub pos: Point3,
     pub radius: f32,
 }
 trait Intersectable {
     fn intersects(&self, origin: &Point3, direction: &Point3) -> Option<Number>;
+}
+
+impl Intersectable for Rectangle {
+    fn intersects(&self, origin: &Point3, direction: &Point3) -> Option<Number> {
+        let distance = self.pos.z - origin.z;
+        let multiple = distance / direction.z;
+
+        let hit_x = direction.x * multiple;
+        let hit_y = direction.y * multiple;
+
+        let hit = self.pos.x < hit_x
+            && self.pos.x + self.width > hit_x
+            && self.pos.y < hit_y
+            && self.pos.y + self.height > hit_y;
+
+        if hit {
+            Some(15)
+        } else {
+            None
+        }
+    }
 }
 
 impl Intersectable for Circle {
@@ -71,7 +97,19 @@ fn main() -> std::io::Result<()> {
         radius: 50.0,
     };
 
+    let rectangle = Rectangle {
+        pos: Point3 {
+            x: 50.0,
+            y: 200.0,
+            z: 7.0,
+        },
+        width: 40.0,
+        height: 50.0,
+    };
+
     let distance = calculate_fov();
+
+    let objects: Vec<Box<dyn Intersectable>> = vec![Box::new(rectangle), Box::new(circle)];
 
     let viewpoint = Point3 {
         x: (WIDTH as f32) / 2f32,
@@ -88,7 +126,10 @@ fn main() -> std::io::Result<()> {
                 y: (y as f32) - viewpoint.y,
                 z: distance,
             };
-            render_area[x][y] = circle.intersects(&viewpoint, &ray).unwrap_or(0);
+            for o in objects.iter() {
+                let prev = render_area[x][y];
+                render_area[x][y] = o.intersects(&viewpoint, &ray).unwrap_or(prev);
+            }
         }
     }
 
