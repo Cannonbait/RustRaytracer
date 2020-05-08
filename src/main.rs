@@ -1,8 +1,8 @@
 use std::fs::File;
 use std::io::prelude::*;
 
-const WIDTH: usize = 10;
-const HEIGHT: usize = 10;
+const WIDTH: usize = 256;
+const HEIGHT: usize = 256;
 const DISTANCE: usize = 1;
 
 type Number = u32;
@@ -21,12 +21,12 @@ impl Intersectable for Circle {
         let distance = self.pos.z - origin.z;
         let multiple = distance / direction.z;
 
-        let hitX = direction.x * multiple;
-        let hitY = direction.y * multiple;
+        let hit_x = direction.x * multiple;
+        let hit_y = direction.y * multiple;
 
         let hit = self.pos.distance(&Point3 {
-            x: hitX,
-            y: hitY,
+            x: hit_x,
+            y: hit_y,
             z: self.pos.z,
         }) < self.radius;
 
@@ -64,7 +64,7 @@ fn main() -> std::io::Result<()> {
             y: 5.0,
             z: 6.0,
         },
-        radius: 2.0,
+        radius: 50.0,
     };
 
     let viewpoint = Point3 {
