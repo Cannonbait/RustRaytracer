@@ -1,9 +1,9 @@
 use std::fs::File;
 use std::io::prelude::*;
 
-const WIDTH: usize = 256;
-const HEIGHT: usize = 256;
-const DISTANCE: usize = 1;
+const WIDTH: usize = 1024;
+const HEIGHT: usize = 1024;
+const FOV: usize = 90;
 
 type Number = u32;
 type Area = Vec<Vec<Number>>;
@@ -52,6 +52,10 @@ impl Point3 {
     }
 }
 
+fn calculate_fov() -> f32 {
+    std::cmp::max(WIDTH, HEIGHT) as f32 / 2.0 / ((FOV as f32) / 2.0).tan()
+}
+
 fn main() -> std::io::Result<()> {
     //Create matrix with default background
 
@@ -67,10 +71,12 @@ fn main() -> std::io::Result<()> {
         radius: 50.0,
     };
 
+    let distance = calculate_fov();
+
     let viewpoint = Point3 {
         x: (WIDTH as f32) / 2f32,
         y: (HEIGHT as f32) / 2f32,
-        z: (DISTANCE as f32),
+        z: distance,
     };
 
     //For each pixel in render
@@ -80,7 +86,7 @@ fn main() -> std::io::Result<()> {
             let ray = Point3 {
                 x: (x as f32) - viewpoint.x,
                 y: (y as f32) - viewpoint.y,
-                z: (DISTANCE as f32),
+                z: distance,
             };
             render_area[x][y] = circle.intersects(&viewpoint, &ray).unwrap_or(0);
         }
