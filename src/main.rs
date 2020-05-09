@@ -6,9 +6,10 @@ mod shape;
 use point::*;
 use shape::*;
 
-const WIDTH: usize = 1024;
-const HEIGHT: usize = 1024;
+const WIDTH: usize = 100;
+const HEIGHT: usize = 100;
 const FOV: usize = 90;
+const FILENAME: &str = "render";
 
 pub type Number = u32;
 pub type Area = Vec<Vec<Number>>;
@@ -17,7 +18,7 @@ fn calculate_fov() -> f32 {
     std::cmp::max(WIDTH, HEIGHT) as f32 / 2.0 / ((FOV as f32) / 2.0).tan()
 }
 
-fn main() -> std::io::Result<()> {
+fn main() {
     //Create matrix with default background
 
     let mut render_area = setup_render_matrix();
@@ -29,22 +30,36 @@ fn main() -> std::io::Result<()> {
             y: 5.0,
             z: 6.0,
         },
-        radius: 50.0,
+        radius: 10.0,
+        colour: 14,
     };
 
     let rectangle = Rectangle {
         pos: Point3 {
-            x: 50.0,
-            y: 200.0,
+            x: 3.0,
+            y: 5.0,
             z: 7.0,
         },
-        width: 40.0,
-        height: 50.0,
+        width: 20.0,
+        height: 20.0,
+        colour: 13,
+    };
+
+    let ructangle = Rectangle {
+        pos: Point3 {
+            x: 7.0,
+            y: 5.0,
+            z: 8.0,
+        },
+        width: 20.0,
+        height: 20.0,
+        colour: 10,
     };
 
     let distance = calculate_fov();
 
-    let objects: Vec<Box<dyn Intersectable>> = vec![Box::new(rectangle), Box::new(circle)];
+    let objects: Vec<Box<dyn Intersectable>> =
+        vec![Box::new(ructangle), Box::new(circle), Box::new(rectangle)];
 
     let viewpoint = Point3 {
         x: (WIDTH as f32) / 2f32,
@@ -62,13 +77,15 @@ fn main() -> std::io::Result<()> {
                 z: distance,
             };
             for o in objects.iter() {
-                let prev = render_area[x][y];
-                render_area[x][y] = o.intersects(&viewpoint, &ray).unwrap_or(prev);
+                if let Some(color) = o.intersects(&viewpoint, &ray) {
+                    render_area[x][y] = color;
+                }
             }
         }
     }
 
-    return render_to_file(render_area, "conway");
+    render_to_file(render_area, FILENAME).expect("Unable to save image");
+    open_and_save_as_png(FILENAME)
 }
 
 fn setup_render_matrix() -> Area {
@@ -93,4 +110,9 @@ fn render_to_file(matrix: Area, name: &str) -> std::io::Result<()> {
     }
 
     Ok(())
+}
+
+fn open_and_save_as_png(name: &str) {
+    let img = image::open(format!("{}.ppm", name)).unwrap();
+    img.save(format!("{}.png", name)).unwrap();
 }

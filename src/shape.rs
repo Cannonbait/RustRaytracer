@@ -4,10 +4,12 @@ pub struct Rectangle {
     pub pos: Point3,
     pub width: f32,
     pub height: f32,
+    pub colour: u32,
 }
 pub struct Circle {
     pub pos: Point3,
     pub radius: f32,
+    pub colour: u32,
 }
 pub trait Intersectable {
     fn intersects(&self, origin: &Point3, direction: &Point3) -> Option<Number>;
@@ -27,7 +29,7 @@ impl Intersectable for Rectangle {
             && self.pos.y + self.height > hit_y;
 
         if hit {
-            Some(15)
+            Some(self.colour)
         } else {
             None
         }
@@ -49,7 +51,7 @@ impl Intersectable for Circle {
         }) < self.radius;
 
         if hit {
-            Some(15)
+            Some(self.colour)
         } else {
             None
         }
